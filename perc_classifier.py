@@ -4,8 +4,6 @@ from visualise_numbers import visualise_number, visualise_number_prediction
 from sklearn import metrics
 import numpy as np 
 
-# To avoid a circular import error the MLP class has been
-# placed here. 
 
 class MultiLayerPerceptron(object):
 
