@@ -1,4 +1,4 @@
-# Multi_Layered_Perceptron
+<h2><ins> Multi Layered Perceptron </ins></h2>
 
 Singular Binary Perceptron to classify MNIST dataset.
 
