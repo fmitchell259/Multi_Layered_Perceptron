@@ -12,6 +12,19 @@ class MultiLayerPerceptron(object):
         Object that holds multiple perceptrons in a 
         dictionary and trains each one on a singular
         number from the MNIST dataset. 
+        
+        Attributes
+        ----------
+        
+        num_inputs: int
+            Number of single perceptrons to build and
+            train.
+        
+        X_train: 2d numpy array
+            Instances and features of training set.
+            
+        y_train: 1d numpy array
+            Instance labels
     
     
     """
@@ -27,6 +40,12 @@ class MultiLayerPerceptron(object):
         return "MLP Object"
 
     def fit(self):
+        
+        # For a user specified number of inputs, create
+        # perceptrons and add them to the input dictionary.
+        
+        # Train each perceptron on every number in the MNIST
+        # dataset. 
 
         for _ in range(self.num_inputs):
 
@@ -38,6 +57,13 @@ class MultiLayerPerceptron(object):
         return self
 
     def predict(self, X):
+        
+        # Iterate over the input dictionary and make
+        # predictions on some instance. 
+        
+        # Save those predictions of a list and choose
+        # the index that has a 1 and not a 0. This index
+        # reflects the MLP's prediction. 
 
         pred_list = []
         dp = 0
