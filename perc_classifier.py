@@ -4,6 +4,10 @@ from visualise_numbers import visualise_number, visualise_number_prediction
 from sklearn import metrics
 import numpy as np 
 
+# To avoid a circular import error the MLP class has been
+# placed here. 
+
+DECISION_BOUND = 0.8
 
 class MultiLayerPerceptron(object):
 
@@ -12,19 +16,6 @@ class MultiLayerPerceptron(object):
         Object that holds multiple perceptrons in a 
         dictionary and trains each one on a singular
         number from the MNIST dataset. 
-        
-        Attributes
-        ----------
-        
-        num_inputs: int
-            Number of single perceptrons to build and
-            train.
-        
-        X_train: 2d numpy array
-            Instances and features of training set.
-            
-        y_train: 1d numpy array
-            Instance labels
     
     
     """
@@ -40,41 +31,26 @@ class MultiLayerPerceptron(object):
         return "MLP Object"
 
     def fit(self):
-        
-        # For a user specified number of inputs, create
-        # perceptrons and add them to the input dictionary.
-        
-        # Train each perceptron on every number in the MNIST
-        # dataset. 
 
         for _ in range(self.num_inputs):
 
             y_train_ = one_hot_label(self.y_train, _)
-            perc = Perceptron(id=_)
-            perc.fit(self.X_train, y_train_)
+            perc = Perceptron(id=_, eta=0.01, max_iter=25)
+            perc.fit(self.X_train, y_train_, func='sig')
             self.inputs[_] = perc
 
         return self
 
     def predict(self, X):
-        
-        # Iterate over the input dictionary and make
-        # predictions on some instance. 
-        
-        # Save those predictions of a list and choose
-        # the index that has a 1 and not a 0. This index
-        # reflects the MLP's prediction. 
 
         pred_list = []
         dp = 0
         for num, model in self.inputs.items():
-            pred = model.predict(X)
+            pred = model.predict(X, func='sig')
             pred_list.append(pred)
-        
-        try:
-            num = pred_list.index(1)
-        except:
-            num = False
+
+        num = pred_list.index(max(pred_list))
+
         return num
 
 
@@ -110,7 +86,7 @@ def main():
         y_train = mnist_data['y_train']
         y_test = mnist_data['y_test']
 
-        print(X_train.shape)
+    #     print(X_train.shape)
 
             # I've got my wee one hot encoding function working
             # so lets create training sets for the number 7. 
@@ -195,7 +171,8 @@ def main():
 
         full_pred = model.retn_prediction_list(X_test)
         y_ = one_hot_label(y_test, num)
-        print(f"\t[+] Perceptron {model.id} Accuracy: {metrics.accuracy_score(full_pred, y_) * 100}%\n")
+        p_list = model.convert_prediction(full_pred)
+        print(f"\t[+] Perceptron {model.id} Accuracy: {metrics.accuracy_score(p_list, y_) * 100}%\n")
 
     # Next up I test the MLP by asking it to make predictions over the
     # whoel testing set, and print the accuracy. 
@@ -234,10 +211,14 @@ def main():
 
     print("[+] Testing Single Perceptron Trained on Sigmoid")
 
-    sigmoid_perceptron = Perceptron()
+    sigmoid_perceptron = Perceptron(eta=0.01, max_iter=100)
     sigmoid_perceptron.fit(X_train, y_train_seven, func='sig')
+
+    # Lets test a 7's with sigmoid
+
     sigmoid_full_pred = sigmoid_perceptron.retn_prediction_list(X_test, func='sig')
-    print(f"[+] Sigmoid Activation Accuracy Predicting 7's: {metrics.accuracy_score(sigmoid_full_pred, y_test_seven) * 100}%\n")
+    sigmoid_pred_list = sigmoid_perceptron.convert_prediction(sigmoid_full_pred)
+    print(f"[+] Sigmoid Activation Accuracy Predicting 7's: {metrics.accuracy_score(sigmoid_pred_list, y_test_seven) * 100}%\n")
 
     # Part 5. Print the data to the screen and the weights. 
 
@@ -245,15 +226,17 @@ def main():
     # print them to screen and use a seven classifer to make a 
     # prediction on them. 
 
-    for _ in range(10):
+    for _ in range(5):
 
         pred = seven_clf.predict(X_test[_])
         visualise_number_prediction(X_test[_], y_test[_], pred, 7)
 
 
-    # # And finally I print the weights of the 7 classifier to the screen
+    # And finally I plot the weights of the '7' classifier to the screen
 
     seven_clf.weight_matrix()
+
+    sigmoid_perceptron.weight_matrix()
 
 
 main()

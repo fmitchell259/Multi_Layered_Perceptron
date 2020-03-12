@@ -53,6 +53,9 @@ class Perceptron(object):
 
         self.w_ = random_gen.normal(loc=0.0, scale=0.01,
                                 size=1 + X.shape[1])
+        # print(f"WEIGHT INITIALISED")
+        # print(self.w_)
+
         self.errors_ = []
 
         for _ in range(self.max_iter):
@@ -106,8 +109,7 @@ class Perceptron(object):
 
     def sigmoid_activation(self, X):
 
-        sig_input = np.dot(X, self.w_[1:]) + self.w_[0]
-        return 1/(1 + np.exp(-sig_input))
+        return 1/(1 + np.exp(-np.dot(X, self.w_[1:]) + self.w_[0]))
 
     def predict(self, X, func='step'):
         
@@ -121,18 +123,30 @@ class Perceptron(object):
         # If this value is greater than or equal to 0 return 1, else return.
 
         if func == 'sig':
-            return np.where(self.sigmoid_activation(X) >= 0.5, 1, 0)
+            return self.sigmoid_activation(X)
         else:
             return np.where(self.dot_product(X) >= 0.0, 1, 0)
 
-    
+    def convert_prediction(self, pred_list):
+
+        DEC_BOUND = 0.9
+        pred = []
+        for p in pred_list:
+            if p > 0.8:
+                pred.append(1)
+            else:
+                pred.append(0)
+        return pred
 
     def retn_prediction_list(self, X, func='step'):
 
         if func == 'sig':
             pred_list = [self.predict(x, func='sig') for x in X]
+            # for p in pred_list:
+            #     p = self.convert_prediction(p)
         else:
             pred_list = [self.predict(x) for x in X]
+        
         pred_array = np.array(pred_list)
         return pred_array
 
