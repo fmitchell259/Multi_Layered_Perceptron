@@ -53,8 +53,6 @@ class Perceptron(object):
 
         self.w_ = random_gen.normal(loc=0.0, scale=0.01,
                                 size=1 + X.shape[1])
-        # print(f"WEIGHT INITIALISED")
-        # print(self.w_)
 
         self.errors_ = []
 
@@ -129,10 +127,10 @@ class Perceptron(object):
 
     def convert_prediction(self, pred_list):
 
-        DEC_BOUND = 0.9
+        DEC_BOUND = 0.8
         pred = []
         for p in pred_list:
-            if p > 0.8:
+            if p > DEC_BOUND:
                 pred.append(1)
             else:
                 pred.append(0)
