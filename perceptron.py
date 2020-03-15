@@ -1,6 +1,74 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
 
+def one_hot_label(labels, target):
+
+    """ One Hot Encodes based on a target
+
+        Parameters
+        ----------
+
+        labels: 1d Numpy array of labels.
+        
+        target: Target value to encode, will
+                be labelled as 1 and the rest
+                as 0.
+
+        Returns
+        -------
+    
+        numpy array: Encoded 1d numpy array.
+
+    """
+
+
+    return np.where(labels == target, 1, 0)
+
+class MultiLayerPerceptron(object):
+
+    """ Multi Layered Perceptron
+
+        Object that holds multiple perceptrons in a 
+        dictionary and trains each one on a singular
+        number from the MNIST dataset. 
+    
+    
+    """
+
+    def __init__(self, num_inputs, X_train, y_train):
+
+        self.num_inputs = num_inputs
+        self.X_train = X_train
+        self.y_train = y_train
+        self.inputs = {}
+
+    def __repr__(self):
+        return "MLP Object"
+
+    def fit(self):
+
+        for _ in range(self.num_inputs):
+
+            y_train_ = one_hot_label(self.y_train, _)
+            perc = Perceptron(id=_, eta=0.01, max_iter=25)
+            perc.fit(self.X_train, y_train_, func='sig')
+            self.inputs[_] = perc
+
+        return self
+
+    def predict(self, X):
+
+        pred_list = []
+        dp = 0
+        for num, model in self.inputs.items():
+            pred = model.predict(X, func='sig')
+            pred_list.append(pred)
+
+        num = pred_list.index(max(pred_list))
+
+        return num
+
+
 class Perceptron(object):
 
     """ Perceptron Object
@@ -69,9 +137,13 @@ class Perceptron(object):
             self.errors_.append(errors)
         return self
 
+
+
     def fit_batch(self, X, y, func='step'):
 
         assert len(X) == len(y)
+
+        BATCH_SIZE = 100
 
         random_gen = np.random.RandomState(self.random_state)
 
@@ -79,9 +151,9 @@ class Perceptron(object):
                                     size=1 + X.shape[1])
 
         self.errors_ = []
-
+        
         for _ in range(self.max_iter):
-
+            count = 0
             weight_update = np.zeros(len(self.w_))
             errors = 0
             for xi, target in zip(X, y):
@@ -91,11 +163,14 @@ class Perceptron(object):
                     update = self.eta * (target - self.predict(xi))
                 weight_update[1:] += update * xi
                 weight_update[0] += update
+                if count % BATCH_SIZE == 0:
+                    self.w_[1:] += np.mean(weight_update[1:]) 
+                    self.w_[0] += np.mean(weight_update[0])
                 errors += int(update != 0.0)
+                count += 1
             self.errors_.append(errors)
 
-            self.w_[1:] += np.mean(weight_update[1:]) 
-            self.w_[0] += np.mean(weight_update[0])
+            
         return self
 
     def dot_product(self, X):
@@ -155,5 +230,31 @@ class Perceptron(object):
         plt.title("Perceptron Classifier (7's): Weight Matrix")
         plt.imshow(pixels, cmap='Greys')
         plt.show()
+
+    def accuracy_scores(self, pred, lab):
+        tp = 0
+        fp = 0
+        tn = 0
+        fn = 0
+
+        for pred, lab in zip(pred, lab):
+            if lab == 0:
+                if pred == 0:
+                    tn += 1
+                else:
+                    fp += 1
+            else:
+                if pred == 0:
+                    fn += 1
+                else:
+                    tp += 1
+
+        
+        precision = tp / (tp + fp)
+        recall = tp / (tp + fn)
+        f1 = 2 * tp / (2 * (tp + fp + fn))
+        print(f"Model Preicision: {precision}")
+        print(f"Model Recall: {recall}")
+        print(f"Model F1 Score: {f1}")
 
         
